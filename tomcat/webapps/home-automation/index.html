@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="css/main.css">
+<style>#shelly-capabilities fieldset{border:1px solid #cfd8dc;margin-top:12px;padding:8px 12px}#shelly-capabilities fieldset label{display:block;margin:7px 0}#device-form #shelly-capabilities input[type=checkbox]{display:inline-block;margin:0 6px 0 0;padding:0;width:auto}.web-control{margin-top:9px}.web-control-button,.database-scheduler-button{background:#546e7a;color:#fff;width:100%;touch-action:none}.web-control-button.active,.database-scheduler-button.active{background:#2e7d32}.core-source-settings>label{display:block;margin:12px 0}#sink-form #database-scheduler-enabled{display:inline-block;margin:0 0 0 8px;padding:0;width:auto}.cron-editor{display:grid;grid-template-columns:repeat(5,minmax(115px,1fr));gap:8px;margin-top:10px}.cron-field{min-width:0}.cron-rows>div{display:flex;gap:4px;margin:4px 0}.cron-rows select{min-width:0}.cron-rows button{padding:4px 8px}#database-columns{margin:10px 0;padding:8px;background:#f3f6f7}#converter-dialog{max-width:600px}#converter-form label{display:block;margin:12px 0}#converter-form input,#converter-form select{display:block;margin-top:5px;padding:8px;width:100%}.modbus-server-control{border-bottom:1px solid #ddd;padding:12px 0}.modbus-server-settings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.modbus-server-settings input{display:block;margin-top:4px;padding:7px;width:100%}.modbus-server-settings input[type=checkbox]{width:auto}.modbus-server-actions{display:flex;gap:8px;margin-top:12px}.modbus-server-actions .active{background:#2e7d32;color:#fff}.modbus-server-actions .danger{background:#b71c1c;color:#fff}@media(max-width:850px){.cron-editor{grid-template-columns:1fr 1fr}}</style>
+<title>Home Automation</title>
+</head>
+<body>
+	<header>
+		<h1>Home Automation</h1>
+		<span id="connection-state">Connecting…</span>
+		<span id="auth-state"></span>
+		<button id="auth-button" onclick="openAuthDialog()" hidden>Login</button>
+		<button id="user-admin-button" onclick="openUserAdminDialog()" hidden>Users</button>
+		<button onclick="location.href='dashboard.html'">Dashboard</button>
+		<button class="requires-write" onclick="saveConfiguration()">Save</button>
+		<button onclick="init_objects()">Refresh</button>
+		<button onclick="wsUpdate()">Live updates</button>
+		<button onclick="wsCloseConnection()">Disconnect</button>
+	</header>
+	<div class="workspace">
+		<aside>
+			<h2 class="requires-write">Add components</h2>
+			<button class="requires-write" onclick="openDeviceDialog()">New Device</button>
+			<button onclick="openManageDevicesDialog()">Manage Devices</button>
+			<button class="requires-write" onclick="openSourceDialog()">New Data Source</button>
+			<button class="requires-write" onclick="openSinkDialog()">New DataSink / Action</button>
+			<button class="requires-write" onclick="addWebSource('pushbutton')">Pushbutton</button>
+			<button class="requires-write" onclick="addWebSource('switch')">Switch</button>
+			<details class="component-menu-group requires-write">
+				<summary>Boolean Logic</summary>
+				<div class="component-menu-items">
+					<button onclick="addLogic('AND')">AND</button>
+					<button onclick="addLogic('OR')">OR</button>
+					<button onclick="addLogic('XOR')">XOR</button>
+					<button onclick="addLogic('RS')">RS Flip-Flop</button>
+					<button onclick="addLogic('NOT')">NOT</button>
+					<button onclick="addLogic('DELAY')">Boolean Delay</button>
+					<button onclick="addLogic('PULSE')">Boolean Pulse</button>
+				</div>
+			</details>
+			<details class="component-menu-group requires-write">
+				<summary>Math</summary>
+				<div class="component-menu-items">
+					<button onclick="addLogic('ADD')">Addition</button>
+					<button onclick="addLogic('SUBTRACT')">Difference</button>
+					<button onclick="addLogic('MULTIPLY')">Multiplication</button>
+					<button onclick="addLogic('DIVIDE')">Division</button>
+					<button onclick="addLogic('COUNTER')">Counter</button>
+					<button onclick="openFixedValueDialog()">Fixed value</button>
+				</div>
+			</details>
+			<details class="component-menu-group requires-write">
+				<summary>Converter</summary>
+				<div class="component-menu-items">
+					<button onclick="openConverterDialog('booleanValue')">Boolean → value</button>
+					<button onclick="openConverterDialog('integerBoolean')">Integer → Boolean</button>
+				</div>
+			</details>
+			<hr><h2>Canvas</h2>
+			<button onclick="resizeCanvas(50)">Size +</button>
+			<button onclick="resizeCanvas(-50)">Size −</button>
+			<p id="canvas-size"></p>
+			<p class="hint">Drag cards to move them. Right-click a card to connect, inspect, disconnect, or delete it.</p>
+		</aside>
+		<main id="canvas-viewport"><section id="component-canvas"></section></main>
+	</div>
+	<dialog id="details-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>Component details</h2><div id="details-content"></div></dialog>
+	<dialog id="converter-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2 id="converter-title">New Converter</h2><form id="converter-form" onsubmit="createConverterComponent(event)"><label>Name (optional)<input id="converter-name"></label><div id="converter-fields"></div><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button type="submit">Create</button></div></form></dialog>
+	<dialog id="fixed-value-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>New fixed numeric value</h2><form id="fixed-value-form" onsubmit="createFixedValue(event)"><label>Name (optional)<input id="fixed-value-name"></label><label>Value type<select id="fixed-value-type" onchange="updateFixedValueInput()"><option value="integer">Integer</option><option value="float">Float</option></select></label><label>Value<input id="fixed-value-value" type="number" step="1" value="0" required></label><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button type="submit">Create DataSource</button></div></form></dialog>
+	<dialog id="source-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>New Data Source</h2><form id="source-form" onsubmit="createSource(event)"><label>Device<select id="source-device" required onchange="renderSourceFields()"></select></label><label>Name (optional)<input id="source-name"></label><div id="source-fields"></div><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button type="submit">Create</button></div></form></dialog>
+	<dialog id="sink-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>New DataSink / Action</h2><form id="sink-form" onsubmit="createSink(event)"><label>Device<select id="sink-device" required onchange="renderSinkActions()"></select></label><label>Name (optional)<input id="sink-name"></label><label>Action<select id="sink-action" required onchange="renderSinkFields()"></select></label><div id="sink-fields"></div><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button id="sink-create" type="submit">Create</button></div></form></dialog>
+	<dialog id="device-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>New Device</h2><form id="device-form" onsubmit="createDevice(event)"><label>Device type<select id="device-type" required onchange="renderDeviceFields()"><option value="">Select a device type…</option><option value="fritz">Fritz Box</option><option value="modbus">Modbus Device</option><option value="xml">XML</option><option value="shelly">Shelly</option><option value="database">MariaDB / MySQL Database</option></select></label><div id="device-fields"></div><p id="device-progress" class="field-help"></p><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button id="device-create" type="submit">Check connection and create</button></div></form></dialog>
+	<dialog id="manage-devices-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>Manage Devices</h2><button type="button" onclick="openErrorLog()">Open error log</button><div id="device-list">Loading devices…</div></dialog>
+	<dialog id="error-log-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>Recent warnings and errors</h2><p class="field-help">The latest 50 messages are held in RAM only and are cleared when the application stops.</p><div id="error-log-list">Loading messages…</div><div class="dialog-actions"><button type="button" onclick="clearErrorLog()">Clear messages</button><button type="button" onclick="this.closest('dialog').close()">Close</button></div></dialog>
+	<dialog id="auth-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2 id="auth-title">Login</h2><p id="auth-help" class="field-help"></p><form id="auth-form" onsubmit="submitAuthentication(event)"><label>Username<input id="auth-username" autocomplete="username" required value="admin"></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" minlength="10" required></label><label id="auth-confirm-label" hidden>Confirm password<input id="auth-password-confirm" type="password" autocomplete="new-password" minlength="10"></label><div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Cancel</button><button id="auth-submit" type="submit">Login</button></div></form></dialog>
+	<dialog id="user-admin-dialog"><button class="dialog-close" onclick="this.closest('dialog').close()">×</button><h2>Web users</h2><label class="checkbox-label"><input id="anonymous-view" type="checkbox" onchange="setAnonymousView()"> Allow viewing without login</label><p class="field-help">Write operations always require an account with write access.</p><div id="web-user-list"></div><hr><h3>Add or update user</h3><form id="web-user-form" onsubmit="saveWebUser(event)"><label>Username<input id="web-user-name" required pattern="[A-Za-z0-9._-]{1,64}"></label><label>New password<input id="web-user-password" type="password" minlength="10" placeholder="Leave empty to keep an existing password"></label><label class="checkbox-label"><input id="web-user-read" type="checkbox" checked> Read</label><label class="checkbox-label"><input id="web-user-write" type="checkbox"> Write</label><label class="checkbox-label"><input id="web-user-admin" type="checkbox"> Administrator</label><div class="dialog-actions"><button type="submit">Save user</button></div></form></dialog>
+	<div id="toast" role="status"></div>
+	<script src="js/display.js"></script>
+	<script src="js/websocket.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/dashboard.css">
+	<title>Home Automation Dashboard</title>
+</head>
+<body>
+	<header>
+		<h1>Dashboard</h1>
+		<span id="connection-state">Verbindung wird aufgebaut…</span>
+		<span id="auth-state"></span>
+		<a class="header-link" href="index.html">Automation</a>
+		<button id="auth-button" hidden>Anmelden</button>
+	</header>
+	<nav id="dashboard-tabs" aria-label="Dashboard-Seiten"></nav>
+	<section id="editor-toolbar" hidden>
+		<button type="button" onclick="addPage()">+ Reiter</button>
+		<button type="button" onclick="renamePage()">Reiter umbenennen</button>
+		<button type="button" onclick="deletePage()">Reiter löschen</button>
+		<span></span>
+		<button type="button" onclick="addLabel()">+ Label</button>
+		<button type="button" onclick="addValueField()">+ Textfeld</button>
+		<button type="button" onclick="addControl('pushbutton')">+ Pushbutton</button>
+		<button type="button" onclick="addControl('switch')">+ Switch</button>
+	</section>
+	<main id="dashboard-viewport">
+		<section id="dashboard-canvas"></section>
+	</main>
+
+	<dialog id="label-dialog">
+		<button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
+		<h2>Label bearbeiten</h2>
+		<form onsubmit="saveLabel(event)">
+			<label>Text<textarea id="label-text" maxlength="500" required></textarea></label>
+			<label>Breite<input id="label-width" type="number" min="100" max="2000" required></label>
+			<label>Höhe<input id="label-height" type="number" min="45" max="2000" required></label>
+			<div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Abbrechen</button><button type="submit">Übernehmen</button></div>
+		</form>
+	</dialog>
+	<dialog id="value-dialog">
+		<button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
+		<h2>Textfeld bearbeiten</h2>
+		<form onsubmit="saveValueField(event)">
+			<label>Datenkomponente<select id="value-component" required></select></label>
+			<label>Skalierungsfaktor<input id="value-scale" type="number" step="any" value="1" required></label>
+			<label>Einheit (optional)<input id="value-unit" maxlength="40"></label>
+			<label>Position der Einheit<select id="value-unit-placement"><option value="suffix">Suffix</option><option value="prefix">Präfix</option></select></label>
+			<label>Breite<input id="value-width" type="number" min="100" max="2000" required></label>
+			<label>Höhe<input id="value-height" type="number" min="45" max="2000" required></label>
+			<div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Abbrechen</button><button type="submit">Übernehmen</button></div>
+		</form>
+	</dialog>
+	<dialog id="control-dialog">
+		<button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
+		<h2 id="control-title">Button bearbeiten</h2>
+		<form onsubmit="saveControl(event)">
+			<label>Datenkomponente<select id="control-component" required></select></label>
+			<label id="control-name-label">Anzeigename (optional)<input id="control-name" maxlength="120"></label>
+			<label>Breite<input id="control-width" type="number" min="100" max="2000" required></label>
+			<label>Höhe<input id="control-height" type="number" min="45" max="2000" required></label>
+			<div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Abbrechen</button><button type="submit">Übernehmen</button></div>
+		</form>
+	</dialog>
+	<dialog id="auth-dialog">
+		<button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
+		<h2 id="auth-title">Anmelden</h2>
+		<p id="auth-help"></p>
+		<form onsubmit="submitAuthentication(event)">
+			<label>Benutzername<input id="auth-username" autocomplete="username" value="admin" required></label>
+			<label>Passwort<input id="auth-password" type="password" minlength="10" required></label>
+			<label id="auth-confirm-label" hidden>Passwort bestätigen<input id="auth-password-confirm" type="password" minlength="10"></label>
+			<div class="dialog-actions"><button type="button" onclick="this.closest('dialog').close()">Abbrechen</button><button type="submit" id="auth-submit">Anmelden</button></div>
+		</form>
+	</dialog>
+	<div id="toast" role="status"></div>
+	<script src="js/dashboard.js"></script>
+</body>
+</html>
