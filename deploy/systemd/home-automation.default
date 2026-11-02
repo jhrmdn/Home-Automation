@@ -1,0 +1,53 @@
+# Vorlage fuer /etc/default/home-automation
+# Wird von systemd ueber EnvironmentFile eingelesen; kein "export" verwenden.
+# Nach Aenderungen: sudo systemctl restart home-automation.service
+# Benoetigt das zugehoerige aktualisierte deploy/systemd/start.sh.
+# Leere optionale Werte verwenden den Anwendungsstandard.
+# Pfade mit Leerzeichen in doppelte Anfuehrungszeichen setzen.
+
+# Java 26: absoluter Pfad zur ausfuehrbaren Java-Datei.
+JAVA_BIN=/usr/bin/java
+
+# Absoluter Pfad zur Anwendungs-JAR.
+# Ohne diese Variable: home-automation.jar neben dem Startskript.
+HOME_AUTOMATION_JAR=/opt/home-automation/home-automation.jar
+
+# Optionale JVM-Argumente; werden von Java selbst eingelesen.
+# Beispiel: JAVA_TOOL_OPTIONS="-Xms128m -Xmx512m -Duser.timezone=Europe/Berlin"
+JAVA_TOOL_OPTIONS=""
+
+# Bind-Adresse und Port des Webservers.
+HOME_AUTOMATION_SERVER_ADDRESS=0.0.0.0
+HOME_AUTOMATION_SERVER_PORT=8080
+
+# Automationszyklus in Sekunden (1 bis 30).
+HOME_AUTOMATION_CYCLE_SECONDS=2
+
+# Java-Loglevel: 0-2=ALL, 3=FINEST, 4=FINER, 5=FINE,
+# 6-7=CONFIG, 8=INFO, 9=WARNING, 10=SEVERE, 11=OFF.
+HOME_AUTOMATION_LOG_LEVEL=8
+
+# Ausfuehrliches Logging (-v); ueberschreibt HOME_AUTOMATION_LOG_LEVEL.
+HOME_AUTOMATION_VERBOSE=false
+
+# HTTPS aktivieren. Ohne Zertifikat wird default.pem im Arbeitsverzeichnis erzeugt.
+HOME_AUTOMATION_HTTPS=false
+
+# PEM-Datei mit Zertifikatskette UND unverschluesseltem privaten Schluessel.
+# Ein gesetzter Pfad aktiviert HTTPS auch bei HOME_AUTOMATION_HTTPS=false.
+# Beispiel: /var/lib/home-automation/server.pem
+HOME_AUTOMATION_HTTPS_CERTIFICATE=""
+
+# Web-Benutzerverwaltung aktivieren. Erster Administrator wird im Browser angelegt.
+HOME_AUTOMATION_WITH_USERS=false
+
+# Mindestlaenge von 10 Zeichen fuer neue Passwoerter deaktivieren.
+HOME_AUTOMATION_NO_MIN_PASSWORD_LENGTH=false
+
+# Entwicklungsoption: FRITZ!Box-Beispieldaten anstelle echter Geraetedaten.
+HOME_AUTOMATION_TEST=false
+
+# Arbeitsverzeichnis, Dienstbenutzer und Neustartverhalten werden in der
+# .service-Datei bzw. per "systemctl edit home-automation.service" eingestellt.
+# Explizite Startargumente mit Werten ueberschreiben die Umgebungsvariablen.
+# Die Optionen -h (Hilfe und Beenden) haben keine eigene Dienstvariable.
